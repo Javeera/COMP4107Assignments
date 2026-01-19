@@ -1,9 +1,7 @@
 # COMP 4107
 # Javeera Faizi 101191910
-# Julie Wechsler 
+# Julie Wechsler _________
 import torch
-
-
 
 #QUESTION 1
 # Write a function that simulates an artificial neuron. The neuron should use an aggregation function that is
@@ -24,8 +22,6 @@ def artificial_neuron(x, w):
 
   # output is the output from the neuron
   return output
-
-
 
 
 #QUESTION 2
@@ -52,8 +48,6 @@ def gradient_descent(f, df, x0, alpha):
   # argmin_f is the input minimizing f
   # min_f is the value of f at its minimum
   return argmin_f, min_f
-
-
 
 
 #QUESTION 3
