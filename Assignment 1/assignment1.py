@@ -82,3 +82,31 @@ def pytorch_module():
       return self.linear(x)
     # A pytorch module
   return module
+
+
+def main():
+
+  x = [1.0, 2.0, 3.0]
+  w = [0.1, 0.2, 0.3]
+
+  neuron_output = artificial_neuron(x, w)
+  print("Q1 - artificial neuron output:", neuron_output)
+
+  def f(coords):
+      x, y = coords
+      return x**2 + y**2
+
+  def df(coords):
+      x, y = coords
+      return [2*x, 2*y]
+
+  x0 = [1.0, -1.0]
+  alpha = 0.1
+
+  argmin_f, min_f = gradient_descent(f, df, x0, alpha)
+  print("Q2 - min found at:", argmin_f)
+  print("Q2 - min value:", min_f)
+
+  model = pytorch_module()
+  print("Q3 - pytorch model:")
+  print(model)
