@@ -1,6 +1,6 @@
 # COMP 4107
 # Javeera Faizi 101191910
-# Julie Wechsler _________
+# Julie Wechsler 101240968
 import torch
 import math
 
@@ -85,30 +85,80 @@ def pytorch_module():
 
 
 def main():
+  # Constants from Q4
+  x1, x2 = 3, -2
+  y1, y2 = 0.5, -0.75
 
-  x = [1.0, 2.0, 3.0]
-  w = [0.1, 0.2, 0.3]
+  # ---------- Q4(a) ----------
+  # f(a,b) = 1/2 * ( (a*x1 + b - y1)^2 + (a*x2 + b - y2)^2 )
+  def f_a(v):
+    a, b = v
+    return 0.5 * ((a*x1 + b - y1)**2 + (a*x2 + b - y2)**2)
 
-  neuron_output = artificial_neuron(x, w)
-  print("Q1 - artificial neuron output:", neuron_output)
+  # gradient:
+  # df/da = (a*x1 + b - y1)*x1 + (a*x2 + b - y2)*x2
+  # df/db = (a*x1 + b - y1)    + (a*x2 + b - y2)
+  def df_a(v):
+    a, b = v
+    r1 = a*x1 + b - y1
+    r2 = a*x2 + b - y2
+    da = r1*x1 + r2*x2
+    db = r1 + r2
+    return [da, db]
 
-  def f(coords):
-      x, y = coords
-      return x**2 + y**2
+  x0_a = [0.0, 0.0]
+  alpha_a = 0.1
 
-  def df(coords):
-      x, y = coords
-      return [2*x, 2*y]
+  argmin_a, minval_a = gradient_descent(f_a, df_a, x0_a, alpha_a)
+  print("Q4(a)")
+  print("  initial guess:", x0_a)
+  print("  learning rate:", alpha_a)
+  print("  (a, b) found: ", argmin_a)
+  print("  min f value: ", minval_a)
 
-  x0 = [1.0, -1.0]
-  alpha = 0.1
+  # ---------- Q4(b) ----------
+  # f(a,b) = 1/2 * ( (SiLU(a*x1 + b) - y1)^2 + (SiLU(a*x2 + b) - y2)^2 )
 
-  argmin_f, min_f = gradient_descent(f, df, x0, alpha)
-  print("Q2 - min found at:", argmin_f)
-  print("Q2 - min value:", min_f)
+  def silu(z):
+    return z / (1 + math.exp(-z))
 
-  model = pytorch_module()
-  print("Q3 - pytorch model:")
-  print(model)
+  # SiLU'(z) = sigmoid(z) * (1 + z * (1 - sigmoid(z)))
+  def silu_prime(z):
+    s = 1 / (1 + math.exp(-z))  # sigmoid(z)
+    return s * (1 + z * (1 - s))
+
+  def f_b(v):
+    a, b = v
+    z1 = a*x1 + b
+    z2 = a*x2 + b
+    return 0.5 * ((silu(z1) - y1)**2 + (silu(z2) - y2)**2)
+
+  # gradient:
+  # df/da = (SiLU(z1)-y1)*SiLU'(z1)*x1 + (SiLU(z2)-y2)*SiLU'(z2)*x2
+  # df/db = (SiLU(z1)-y1)*SiLU'(z1)    + (SiLU(z2)-y2)*SiLU'(z2)
+  def df_b(v):
+    a, b = v
+    z1 = a*x1 + b
+    z2 = a*x2 + b
+
+    r1 = silu(z1) - y1
+    r2 = silu(z2) - y2
+
+    d1 = silu_prime(z1)
+    d2 = silu_prime(z2)
+
+    da = r1*d1*x1 + r2*d2*x2
+    db = r1*d1 + r2*d2
+    return [da, db]
+
+  x0_b = [0.0, 0.0]
+  alpha_b = 0.1
+
+  argmin_b, minval_b = gradient_descent(f_b, df_b, x0_b, alpha_b)
+  print("\nQ4(b)")
+  print("  initial guess:", x0_b)
+  print("  learning rate:", alpha_b)
+  print("  (a, b) found: ", argmin_b)
+  print("  min f value: ", minval_b)
 
 main()
