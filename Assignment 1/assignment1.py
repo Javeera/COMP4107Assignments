@@ -110,3 +110,5 @@ def main():
   model = pytorch_module()
   print("Q3 - pytorch model:")
   print(model)
+
+main()
