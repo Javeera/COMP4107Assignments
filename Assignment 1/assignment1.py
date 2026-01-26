@@ -81,7 +81,7 @@ def pytorch_module():
     def forward(self, x):
       return self.linear(x)
     # A pytorch module
-  return module
+  return module()
 
 
 def main():
