@@ -2,6 +2,7 @@
 # Javeera Faizi 101191910
 # Julie Wechsler _________
 import torch
+import math
 
 #QUESTION 1
 # Write a function that simulates an artificial neuron. The neuron should use an aggregation function that is
@@ -20,7 +21,9 @@ def artificial_neuron(x, w):
   # x is a list of inputs of length n
   # w is a list of inputs of length n
 
-  # output is the output from the neuron
+  #weighted_sum = sum(xi * wi for xi, wi in zip(x, w))
+  weighted_sum = sum(x[i] * w[i] for i in range(len(x)))
+  output = weighted_sum / (1 + math.exp(-weighted_sum))# output is the output from the neuron
   return output
 
 
@@ -45,6 +48,15 @@ def gradient_descent(f, df, x0, alpha):
   # x0 is an initial guess for the input minimizing f
   # alpha is the learning rate
 
+  x = x0.copy()
+  max_iters = 1000
+  for _ in range(max_iters):
+    grad = df(x)
+    x = [x[i] - alpha * grad[i] for i in range(len(x))]
+
+  argmin_f = x
+  min_f = f(x)
+
   # argmin_f is the input minimizing f
   # min_f is the value of f at its minimum
   return argmin_f, min_f
@@ -61,6 +73,12 @@ def gradient_descent(f, df, x0, alpha):
 
 # A function that returns a neural network module in PyTorch
 def pytorch_module():
+  class module(torch.nn.Module):
+    def __init__(self):
+      super().__init__()
+      self.linear = torch.nn.Linear(1, 1)
 
-  # A pytorch module
+    def forward(self, x):
+      return self.linear(x)
+    # A pytorch module
   return module
