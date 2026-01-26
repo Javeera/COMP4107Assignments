@@ -152,7 +152,7 @@ def main():
     return [da, db]
 
   x0_b = [0.0, 0.0]
-  alpha_b = 0.1
+  alpha_b = 0.01
 
   argmin_b, minval_b = gradient_descent(f_b, df_b, x0_b, alpha_b)
   print("\nQ4(b)")
