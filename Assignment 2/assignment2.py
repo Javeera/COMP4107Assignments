@@ -72,11 +72,11 @@ def multitask_training(data_filepath):
       # Update parameters according to SGD with learning rate schedule here
       optimizer.step()
       scheduler.step()
-      
+
   # A trained torch.nn.Module object
   return multitask_network
 
-
+#Question 3
 # A function that creates a pytorch model to predict the salary of an MLB position player
 def mlb_position_player_salary(filepath):
   # filepath is the path to an csv file containing the dataset
