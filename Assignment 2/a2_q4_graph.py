@@ -2,6 +2,16 @@ import numpy
 import matplotlib.pyplot as plt
 from assignment2 import run_salary_experiment
 
+best = {"val": float("inf"), "neurons": None, "layers": None, "act": None, "epochs": None}
+
+def update_best(val_rmse, neurons, layers, act, epochs):
+  if val_rmse < best["val"]:
+    best["val"] = val_rmse
+    best["neurons"] = neurons
+    best["layers"] = layers
+    best["act"] = act
+    best["epochs"] = epochs
+
 ################################################
 
 def q4a_neurons(filepath):
@@ -11,6 +21,7 @@ def q4a_neurons(filepath):
   for n in neuron_list:
     _, _, val_rmse, _ = run_salary_experiment(filepath, neurons=n, num_hidden_layers=2, activation="relu", epochs=300, seed=0)
     val_scores.append(val_rmse)
+    update_best(val_rmse, neurons=n, layers=2, act="relu", epochs=300)
     print("neurons =", n, "val RMSE =", val_rmse)
 
   plt.figure()
@@ -31,6 +42,7 @@ def q4b_layers(filepath):
   for L in layer_list:
     _, _, val_rmse, _ = run_salary_experiment(filepath, neurons=64, num_hidden_layers=L, activation="relu", epochs=300, seed=0)
     val_scores.append(val_rmse)
+    update_best(val_rmse, neurons=64, layers=L, act="relu", epochs=300)
     print("layers =", L, "val RMSE =", val_rmse)
 
   plt.figure()
@@ -51,6 +63,7 @@ def q4c_epochs(filepath):
   for E in epoch_list:
     _, _, val_rmse, _ = run_salary_experiment(filepath, neurons=64, num_hidden_layers=2, activation="relu", epochs=E, seed=0)
     val_scores.append(val_rmse)
+    update_best(val_rmse, neurons=64, layers=2, act="relu", epochs=E)
     print("epochs =", E, "val RMSE =", val_rmse)
 
   plt.figure()
@@ -71,6 +84,7 @@ def q4d_activations(filepath):
   for a in act_list:
     _, _, val_rmse, _ = run_salary_experiment(filepath, neurons=64, num_hidden_layers=2, activation=a, epochs=300, seed=0)
     val_scores.append(val_rmse)
+    update_best(val_rmse, neurons=64, layers=2, act=a, epochs=300)
     print("activation =", a, "val RMSE =", val_rmse)
 
   plt.figure()
