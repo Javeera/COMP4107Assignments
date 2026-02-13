@@ -122,6 +122,10 @@ if __name__ == "__main__":
   best_E, _ = q4c_epochs(fp)
   best_A, _ = q4d_activations(fp)
 
-  # Use the best combo you observed (sometimes mixing “best of each” isn't best),
-  # but you can start with:
-  q4e_best(fp, neurons=best_n, num_hidden_layers=best_L, activation=best_A, epochs=best_E)
+  q4e_best(
+    fp,
+    neurons=best["neurons"],
+    num_hidden_layers=best["layers"],
+    activation=best["act"],
+    epochs=best["epochs"]
+  )
