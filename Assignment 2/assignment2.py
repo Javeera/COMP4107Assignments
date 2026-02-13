@@ -85,8 +85,8 @@ def mlb_position_player_salary(filepath):
 
   #last line is salary
   #convert to tensors
-  y_np = data_np[:, 0:1]     # shape (N, 1)
-  X_np = data_np[:, 1:]      # shape (N, 16)
+  y_np = data[:, 0:1]     # shape (N, 1)
+  X_np = data[:, 1:]      # shape (N, 16)
 
   X = torch.as_tensor(X_np, dtype=torch.float32)
   y = torch.as_tensor(y_np, dtype=torch.float32)
@@ -133,8 +133,8 @@ def mlb_position_player_salary(filepath):
   loss_fn = torch.nn.MSELoss()
   optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-  #training
-   num_epochs = 300
+  #`training
+  num_epochs = 300
   batch_size = 32
 
   for epoch in range(num_epochs):
@@ -164,4 +164,47 @@ def mlb_position_player_salary(filepath):
 
   # validation_performance is the performance of the model on a validation set
   return model, validation_performance
-  
+
+
+
+
+if __name__ == "__main__":
+  # ---- Q1: sanity check forward pass ----
+  print("=== Q1: MultitaskNetwork forward pass test ===")
+  net = MultitaskNetwork()
+
+  x_test = torch.rand(2, 3)  # 2 samples, 3 input features
+  out_a, out_b = net(x_test)
+
+  print("x_test shape:", x_test.shape)
+  print("out_a shape:", out_a.shape, " (should be [2, 3])")
+  print("out_b shape:", out_b.shape, " (should be [2, 3])")
+  print("out_a row sums (should be ~1):", out_a.sum(dim=1))
+  print("out_b row sums (should be ~1):", out_b.sum(dim=1))
+
+  # ---- Q2: run training on multitask_data.csv ----
+  print("\n=== Q2: multitask_training test (num_epochs=100, batch_size=4) ===")
+  trained_multitask = multitask_training("multitask_data.csv")
+
+  # quick check: run trained model on first batch from file
+  data = numpy.loadtxt("multitask_data.csv", delimiter=",")
+  batch_size = 4
+  x0 = torch.as_tensor(data[0:batch_size, 6:9], dtype=torch.float32)
+  ya0 = torch.as_tensor(data[0:batch_size, 0:3], dtype=torch.float32)
+  yb0 = torch.as_tensor(data[0:batch_size, 3:6], dtype=torch.float32)
+
+  pa0, pb0 = trained_multitask(x0)
+  print("First batch predicted probs A:\n", pa0)
+  print("First batch predicted probs B:\n", pb0)
+  print("First batch true one-hot A:\n", ya0)
+  print("First batch true one-hot B:\n", yb0)
+
+  # ---- Q3: train salary regressor on baseball.txt ----
+  print("\n=== Q3: mlb_position_player_salary test ===")
+  model, val_perf = mlb_position_player_salary("baseball.txt")
+  print("Validation performance returned:", val_perf)
+
+  # quick check: run model on first 3 rows (after preprocessing inside the function, this is just a smoke test)
+  # (We can't perfectly reproduce internal preprocessing here unless you expose it,
+  #  so this is just confirming the function runs and returns correctly.)
+  print("Model type:", type(model))
