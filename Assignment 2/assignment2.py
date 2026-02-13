@@ -2,7 +2,6 @@
 # Javeera Faizi 101191910
 # Julie Wechsler 101240968
 # Name this file assignment2.py when you submit
-from math import perm
 import numpy
 import torch
 
@@ -89,18 +88,19 @@ def multitask_training(data_filepath):
 class Salary_Prediction(torch.nn.Module):
   def __init__(self):
     super().__init__()
-    self.hidden_layer1 = torch.nn.Linear(16, 64)
-    self.activation1 = torch.nn.ReLU()
-    self.hidden_layer2 = torch.nn.Linear(64, 64)
-    self.activation2 = torch.nn.ReLU()
-    self.output = torch.nn.Linear(64, 1)
+    self.hidden_layer1 = torch.nn.Linear(16, 16)
+    # self.hidden_layer2 = torch.nn.Linear(32, 16)
+    self.output = torch.nn.Linear(16, 1)
+
+    self.activation = torch.nn.ReLU()
+
 
 
   def forward(self, x):
     x = self.hidden_layer1(x)
-    x = self.activation1(x)
-    x = self.hidden_layer2(x)
-    x = self.activation2(x)
+    # x = self.activation(x)
+    # x = self.hidden_layer2(x)
+    x = self.activation(x)
     x = self.output(x)
 
     return x
@@ -108,12 +108,9 @@ class Salary_Prediction(torch.nn.Module):
 
 def mlb_position_player_salary(filepath):
   num_epochs = 300
-  batch_size = 32
+  batch_size = 16
 
   data = numpy.loadtxt(filepath, delimiter=",", skiprows=1)
-
-  #perm = numpy.random.permutation(data.shape[0])
-  #data = data[perm]
 
   train_size = int(0.8 * data.shape[0])
   train_set = data[:train_size]
@@ -136,17 +133,13 @@ def mlb_position_player_salary(filepath):
   x_train = (x_train - x_train_mean) / x_train_std
   x_test = (x_test - x_train_mean) / x_train_std
 
-  #batches_per_epoch = x_train.shape[0] // batch_size
-  batches_per_epoch = (x_train.shape[0] + batch_size - 1) // batch_size
-
-  model = Salary_Prediction()
-  loss_fn = torch.nn.MSELoss()
-
+  batches_per_epoch = x_train.shape[0] // batch_size
+  
   model = Salary_Prediction()
 
   loss_fn = torch.nn.MSELoss()
 
-  optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+  optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
   scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epochs)
 
@@ -163,7 +156,6 @@ def mlb_position_player_salary(filepath):
 
       y_pred = model(x)
 
-      # Compute loss here
       loss = loss_fn(y_pred, y_true)
 
       epoch_loss += loss.item()
@@ -173,20 +165,23 @@ def mlb_position_player_salary(filepath):
       optimizer.step()
 
     scheduler.step()
-    print("on epoch ", epoch)
-    print("avg loss", epoch_loss / batches_per_epoch)
+    # print("on epoch ", epoch)
+    # print("avg loss", epoch_loss / batches_per_epoch)
 
 
   model.eval() 
   with torch.no_grad():
-    
+
     y_pred = model(x_test)
     loss_function = torch.nn.MSELoss()
     loss = loss_function(y_pred, y_test)
+    rmse = torch.sqrt(loss)
+
+  print("Test MSE:", loss.item())
+  print("Test RMSE:", rmse.item())
 
   print("TMSE:", loss.item())
-  rmse = torch.sqrt(loss).item()
-  print("RMSE:", rmse)
+
 
 ##############################################3
 
@@ -298,4 +293,3 @@ def run_salary_experiment(filepath,
 
 if __name__ == "__main__":
   mlb_position_player_salary("baseball.txt")
-
