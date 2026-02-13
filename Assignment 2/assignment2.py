@@ -1,4 +1,6 @@
-# Name this file assignment2.py when you submit
+# COMP 4107
+# Javeera Faizi 101191910
+# Julie Wechsler 101240968
 import numpy
 import torch
 
@@ -83,7 +85,7 @@ def mlb_position_player_salary(filepath):
 
   data = numpy.loadtxt(filepath, delimiter=",", skiprows=1).astype(numpy.float32) #load data, first row is headers so skip
 
-  #last line is salary
+  #first line is salary
   #convert to tensors
   y_np = data[:, 0:1]     # shape (N, 1)
   X_np = data[:, 1:]      # shape (N, 16)
@@ -105,11 +107,11 @@ def mlb_position_player_salary(filepath):
 
   #tensor operations
   mu = X_train.mean(dim=0, keepdim=True)
-  sigma = X_train.std(dim=0, keepdim=True)
-  sigma = torch.where(sigma == 0, torch.ones_like(sigma), sigma)
+  sigma = X_train.std(dim=0, keepdim=True) #
+  sigma = torch.where(sigma == 0, torch.ones_like(sigma), sigma) #
 
-  X_train = (X_train - mu) / sigma
-  X_val = (X_val - mu) / sigma
+  X_train = (X_train - mu) / sigma #
+  X_val = (X_val - mu) / sigma #
 
   #define model (simple regression MLP)
   input_dim = X_train.shape[1]
@@ -133,11 +135,14 @@ def mlb_position_player_salary(filepath):
   loss_fn = torch.nn.MSELoss()
   optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-  #`training
+  #training
   num_epochs = 300
   batch_size = 32
 
   for epoch in range(num_epochs):
+    epoch_loss = 0.0 # loss tracking
+    num_batches = 0# loss tracking
+
     perm_train = torch.randperm(X_train.shape[0])
     X_train_shuf = X_train[perm_train]
     y_train_shuf = y_train[perm_train]
@@ -154,13 +159,16 @@ def mlb_position_player_salary(filepath):
       loss.backward()
       optimizer.step()
 
+      epoch_loss += loss.item() #loss tracking
+      num_batches += 1 #loss tracking
+    epoch_loss /= num_batches #loss tracking
+
   #validation
   model.eval()
   with torch.no_grad():
     val_pred = model(X_val)
     val_mse = loss_fn(val_pred, y_val)
     validation_performance = torch.sqrt(val_mse).item()
-
 
   # validation_performance is the performance of the model on a validation set
   return model, validation_performance
