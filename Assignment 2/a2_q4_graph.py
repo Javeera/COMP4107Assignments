@@ -1,3 +1,7 @@
+import numpy
+import matplotlib.pyplot as plt
+from assignment2 import run_salary_experiment
+
 ################################################
 
 def q4a_neurons(filepath):
