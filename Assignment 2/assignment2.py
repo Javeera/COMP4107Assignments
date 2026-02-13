@@ -2,6 +2,7 @@
 # Javeera Faizi 101191910
 # Julie Wechsler 101240968
 # Name this file assignment2.py when you submit
+from math import perm
 import numpy
 import torch
 
@@ -111,6 +112,9 @@ def mlb_position_player_salary(filepath):
 
   data = numpy.loadtxt(filepath, delimiter=",", skiprows=1)
 
+  #perm = numpy.random.permutation(data.shape[0])
+  #data = data[perm]
+
   train_size = int(0.8 * data.shape[0])
   train_set = data[:train_size]
   test_set  = data[train_size:]
@@ -132,8 +136,12 @@ def mlb_position_player_salary(filepath):
   x_train = (x_train - x_train_mean) / x_train_std
   x_test = (x_test - x_train_mean) / x_train_std
 
-  batches_per_epoch = x_train.shape[0] // batch_size
-  
+  #batches_per_epoch = x_train.shape[0] // batch_size
+  batches_per_epoch = (x_train.shape[0] + batch_size - 1) // batch_size
+
+  model = Salary_Prediction()
+  loss_fn = torch.nn.MSELoss()
+
   model = Salary_Prediction()
 
   loss_fn = torch.nn.MSELoss()
@@ -180,6 +188,114 @@ def mlb_position_player_salary(filepath):
   rmse = torch.sqrt(loss).item()
   print("RMSE:", rmse)
 
+##############################################3
+
+import matplotlib.pyplot as plt
+import numpy
+import torch
+
+def _activation(name):
+  name = name.lower()
+  if name == "relu": return torch.nn.ReLU()
+  if name == "tanh": return torch.nn.Tanh()
+  if name == "sigmoid": return torch.nn.Sigmoid()
+  if name == "leaky_relu": return torch.nn.LeakyReLU()
+  if name == "elu": return torch.nn.ELU()
+  if name == "gelu": return torch.nn.GELU()
+  raise ValueError("Unknown activation: " + name)
+
+def _build_regressor(input_dim, num_hidden_layers, neurons, activation_name):
+  layers = []
+  act = _activation(activation_name)
+
+  d = input_dim
+  for _ in range(num_hidden_layers):
+    layers.append(torch.nn.Linear(d, neurons))
+    layers.append(act)
+    d = neurons
+
+  layers.append(torch.nn.Linear(d, 1))  # regression output
+  return torch.nn.Sequential(*layers)
+
+def _rmse(model, X, y):
+  model.eval()
+  with torch.no_grad():
+    pred = model(X)
+    mse = torch.mean((pred - y) ** 2)
+    return torch.sqrt(mse).item()
+
+def run_salary_experiment(filepath,
+                          neurons=64,
+                          num_hidden_layers=2,
+                          activation="relu",
+                          epochs=300,
+                          batch_size=32,
+                          lr=1e-3,
+                          seed=0):
+  # Load baseball.txt (has header)
+  data = numpy.loadtxt(filepath, delimiter=",", skiprows=1).astype(numpy.float32)
+  y = torch.as_tensor(data[:, 0:1], dtype=torch.float32)
+  X = torch.as_tensor(data[:, 1:], dtype=torch.float32)
+
+  # Fixed shuffle + split: 70/15/15 (train/val/test)
+  torch.manual_seed(seed)
+  N = X.shape[0]
+  perm = torch.randperm(N)
+  X = X[perm]
+  y = y[perm]
+
+  n_train = int(0.70 * N)
+  n_val   = int(0.15 * N)
+
+  X_train = X[:n_train]
+  y_train = y[:n_train]
+  X_val   = X[n_train:n_train + n_val]
+  y_val   = y[n_train:n_train + n_val]
+  X_test  = X[n_train + n_val:]
+  y_test  = y[n_train + n_val:]
+
+  # Normalize using TRAIN stats only
+  mu = X_train.mean(dim=0, keepdim=True)
+  sigma = X_train.std(dim=0, keepdim=True)
+  sigma = torch.where(sigma == 0, torch.ones_like(sigma), sigma)
+
+  X_train = (X_train - mu) / sigma
+  X_val   = (X_val - mu) / sigma
+  X_test  = (X_test - mu) / sigma
+
+  # Model
+  model = _build_regressor(X_train.shape[1], num_hidden_layers, neurons, activation)
+
+  loss_fn = torch.nn.MSELoss()
+  optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+  # Train
+  for _ in range(epochs):
+    perm2 = torch.randperm(X_train.shape[0])
+    Xs = X_train[perm2]
+    ys = y_train[perm2]
+
+    for start in range(0, Xs.shape[0], batch_size):
+      end = min(start + batch_size, Xs.shape[0])
+      xb = Xs[start:end]
+      yb = ys[start:end]
+
+      pred = model(xb)
+      loss = loss_fn(pred, yb)
+
+      optimizer.zero_grad()
+      loss.backward()
+      optimizer.step()
+
+  # Metrics
+  train_rmse = _rmse(model, X_train, y_train)
+  val_rmse   = _rmse(model, X_val, y_val)
+  test_rmse  = _rmse(model, X_test, y_test)
+
+  return model, train_rmse, val_rmse, test_rmse
+
+
 
 if __name__ == "__main__":
   mlb_position_player_salary("baseball.txt")
+
