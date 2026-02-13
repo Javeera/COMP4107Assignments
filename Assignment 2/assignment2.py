@@ -224,8 +224,8 @@ def run_salary_experiment(filepath,
                           num_hidden_layers=2,
                           activation="relu",
                           epochs=300,
-                          batch_size=32,
-                          lr=1e-3,
+                          batch_size=16,
+                          lr=0.01,
                           seed=0):
   # Load baseball.txt (has header)
   data = numpy.loadtxt(filepath, delimiter=",", skiprows=1).astype(numpy.float32)
@@ -233,14 +233,14 @@ def run_salary_experiment(filepath,
   X = torch.as_tensor(data[:, 1:], dtype=torch.float32)
 
   # Fixed shuffle + split: 70/15/15 (train/val/test)
-  torch.manual_seed(seed)
+  #torch.manual_seed(seed)
   N = X.shape[0]
   perm = torch.randperm(N)
   X = X[perm]
   y = y[perm]
 
-  n_train = int(0.70 * N)
-  n_val   = int(0.15 * N)
+  n_train = int(0.80 * N)
+  n_val   = int(0.10 * N)
 
   X_train = X[:n_train]
   y_train = y[:n_train]
