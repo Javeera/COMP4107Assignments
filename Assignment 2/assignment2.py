@@ -14,7 +14,6 @@ class MultitaskNetwork(torch.nn.Module):
     self.relu = torch.nn.ReLU()
     self.softmax = torch.nn.Softmax(dim=1)
 
-
   def forward(self, x):
     # Code for forward method goes here
     h = self.relu(self.fullyconnectedlayer1(x))
@@ -80,8 +79,15 @@ def multitask_training(data_filepath):
 # A function that creates a pytorch model to predict the salary of an MLB position player
 def mlb_position_player_salary(filepath):
   # filepath is the path to an csv file containing the dataset
-
   # model is a trained pytorch model for predicting the salary of an MLB position player
+
+  data = numpy.loadtxt(filepath, delimiter=",") #load data
+
+  #last line is salary
+  X = data[:, :-1].astype(numpy.float32)
+  y = data[:, -1].astype(numpy.float32).reshape(-1, 1)
+
+
   # validation_performance is the performance of the model on a validation set
   return model, validation_performance
   
