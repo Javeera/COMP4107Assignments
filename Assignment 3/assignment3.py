@@ -63,19 +63,20 @@ class RNNModel(nn.Module):
     def __init__(self):
         super().__init__()
 
+        #GRU layer with 2 layers, 128 hidden units, dropout of 0.3, and bidirectional
         self.rnn = nn.GRU(
             input_size=3,
             hidden_size=128,
             num_layers=2,
             batch_first=True,
-            dropout=0.3,
+            dropout=0.3, #30% to reduce overfitting
             bidirectional=True
         )
 
-        self.fc1 = nn.Linear(128 * 2, 64)
+        self.fc1 = nn.Linear(128 * 2, 64) #layer 1 which reads the sequence
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.3)
-        self.fc2 = nn.Linear(64, 8)
+        self.dropout = nn.Dropout(0.3) 
+        self.fc2 = nn.Linear(64, 8) #layer 2 which reads output of layer 1 
 
     def forward(self, x):
         x = x.permute(0, 2, 1)   # (batch, 315, 3)
