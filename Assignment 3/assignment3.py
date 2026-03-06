@@ -73,13 +73,13 @@ class RNNModel(nn.Module):
             bidirectional=True
         )
 
-        self.fc1 = nn.Linear(128 * 2, 64) #layer 1 which reads the sequence
+        self.fc1 = nn.Linear(128 * 2, 64) #layer 1 which reads the sequence, 256 features to 64
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.3) 
-        self.fc2 = nn.Linear(64, 8) #layer 2 which reads output of layer 1 
+        self.fc2 = nn.Linear(64, 8) #layer 2 which reads output of layer 1, 64 features to 8.
 
     def forward(self, x):
-        x = x.permute(0, 2, 1)   # (batch, 315, 3)
+        x = x.permute(0, 2, 1) #fixes format to (batch, 315, 3)
 
         output, h = self.rnn(x)
 
@@ -88,12 +88,13 @@ class RNNModel(nn.Module):
         h_backward = h[-1]
         h = torch.cat([h_forward, h_backward], dim=1)
 
+        #send features through layers to get class predictions
         x = self.fc1(h)
         x = self.relu(x)
         x = self.dropout(x)
         x = self.fc2(x)
 
-        return x
+        return x #return class prediction
 
 # A function that creates an rnn model to predict which class a sequence corresponds to
 def u_wave_gesture_library_rnn_model(training_data_filepath):
